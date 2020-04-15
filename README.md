@@ -1,4 +1,4 @@
-Seo checker utils
+SEO checker utils
 ========================================================
 
 ## Install
