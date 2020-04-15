@@ -1,6 +1,7 @@
 import logging
 import os
 import unittest
+from copy import copy
 from typing import List
 import pandas as pd
 
@@ -21,6 +22,7 @@ class TestClass(unittest.TestCase):
         new_site_pages = self.get_new_site_pages(df)
 
         do_not_find_new_urls = list()
+        old_site_pages_without_new_urls = copy(old_site_pages)
 
         for new_site_page in new_site_pages:
             if new_site_page not in old_site_pages:
@@ -29,15 +31,26 @@ class TestClass(unittest.TestCase):
             else:
                 if env.is_need_show_more_info():
                     logging.info(f"{new_site_page} найден в списке старых урлов")
+                old_site_pages_without_new_urls.remove(new_site_page)
 
         logging.info(f"Всего проверено новых урлов {len(new_site_pages)}")
         logging.info(f"Всего старых урлов {len(old_site_pages)}")
 
         if len(do_not_find_new_urls) == 0:
-            logging.warning("Список ненайденных новых урлов в старых пустой. Ты молодец, белка! :)")
-            return True
-        logging.warning(f"Список ненайденных новых урлов в старых в количестве {len(do_not_find_new_urls)}")
-        print(do_not_find_new_urls)
+            logging.info("Список ненайденных новых урлов в старых пустой. Ты молодец, белка! :)")
+        else:
+            logging.warning(f"Список ненайденных новых урлов в старых в количестве {len(do_not_find_new_urls)}")
+            print(do_not_find_new_urls)
+
+        assert len(old_site_pages_without_new_urls) > 0, "old_site_pages_without_new_urls must be not 0"
+
+        output_file_name = self.test_data_dir_name + '/' + 'old_urls_without_new.txt'
+        with open(output_file_name, 'w') as f:
+            f.truncate(0)
+            for old_site_page_without_new_urls in old_site_pages_without_new_urls:
+                f.write("%s\n" % old_site_page_without_new_urls)
+
+        logging.info(f"Старые урлы без включения найденных новых записаны в файл: {output_file_name}")
 
     def get_old_site_pages(self, df) -> List:
         old_site_pages = df[self.old_site_pages].astype(str)
